@@ -10,6 +10,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { protectSignUpAction } from "@/actions/auth";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +20,8 @@ const RegisterPage = () => {
     email: "",
     password: "",
   });
+  const { register, isLoading } = useAuthStore();
+  const router = useRouter();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -36,7 +41,16 @@ const RegisterPage = () => {
       return;
     }
 
-    console.log("Form submitted:", formData);
+    const userId = await register(
+      formData.name,
+      formData.email,
+      formData.password
+    );
+
+    if (userId) {
+      toast.success("Register successfully!");
+      router.push("/auth/login");
+    }
   };
 
   return (
@@ -91,7 +105,7 @@ const RegisterPage = () => {
               <Input
                 id="password"
                 name="password"
-                type="text"
+                type="password"
                 placeholder="Enter your password"
                 required
                 className="bg-[#ffede1]"
@@ -102,9 +116,17 @@ const RegisterPage = () => {
 
             <Button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-black text-white hover:bg-black transition-colors cursor-pointer"
             >
-              Create Account
+              {isLoading ? (
+                "Create Account..."
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
             </Button>
             <p className="text-center text-[#3a3d56] text-sm">
               Already have an account?{" "}

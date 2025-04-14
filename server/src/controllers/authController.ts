@@ -105,6 +105,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ error: "Logout failed" });
+  }
+};
+
 export const refreshAccessToken = async (
   req: Request,
   res: Response
@@ -143,16 +154,5 @@ export const refreshAccessToken = async (
   } catch (error) {
     console.error("Token refresh error:", error);
     res.status(500).json({ error: "Token refresh failed" });
-  }
-};
-
-export const logout = async (req: Request, res: Response): Promise<void> => {
-  try {
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
-    res.status(200).json({ success: true, message: "Logged out successfully" });
-  } catch (error) {
-    console.error("Logout error:", error);
-    res.status(500).json({ error: "Logout failed" });
   }
 };

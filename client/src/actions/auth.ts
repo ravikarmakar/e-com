@@ -1,7 +1,7 @@
 "use server";
 
 import { request } from "@arcjet/next";
-import { protectSignupRules } from "@/arcjet";
+import { protectSignInRules, protectSignupRules } from "@/arcjet";
 
 export const protectSignUpAction = async (email: string) => {
   const req = await request();
@@ -43,6 +43,42 @@ export const protectSignUpAction = async (email: string) => {
         success: false,
         status: 403,
       };
+    }
+  }
+
+  return {
+    success: true,
+  };
+};
+
+export const protectSignInAction = async (email: string) => {
+  const req = await request();
+  const decision = await protectSignInRules.protect(req, { email });
+
+  if (decision.isDenied()) {
+    if (decision.reason.isEmail()) {
+      const emailTypes = decision.reason.emailTypes;
+
+      if (emailTypes.includes("DISPOSABLE")) {
+        return {
+          error: "Disposable email addresses are not allowed.",
+          success: false,
+          status: 403,
+        };
+      } else if (emailTypes.includes("INVALID")) {
+        return {
+          error: "Invalid email addresses are not allowed.",
+          success: false,
+          status: 403,
+        };
+      } else if (emailTypes.includes("NO_MX_RECORDS")) {
+        return {
+          error:
+            "Email domain does not have valid MX Records! Please try with different email address.",
+          success: false,
+          status: 403,
+        };
+      }
     }
   }
 

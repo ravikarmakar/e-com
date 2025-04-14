@@ -7,8 +7,51 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useState } from "react";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
+import { protectSignInAction } from "@/actions/auth";
+import { toast } from "sonner";
+import { ArrowRight } from "lucide-react";
 
 const LoginPage = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const { login, isLoading } = useAuthStore();
+  const router = useRouter();
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const checkFirstLevelOfValidation = await protectSignInAction(
+      formData.email
+    );
+    if (!checkFirstLevelOfValidation.success) {
+      toast.error(checkFirstLevelOfValidation.error || "Something went wrong!");
+      return;
+    }
+
+    const success = await login(formData.email, formData.password);
+
+    if (success) {
+      toast.success("Login successfully!");
+      const user = useAuthStore.getState().user;
+      if (user?.role === "SUPER_ADMIN") router.push("/super-admin");
+      else router.push("/home");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#fff6f4] flex">
       <div className="hidden lg:block w-1/2 bg-[#ffede1] relative overflow-hidden">
@@ -29,7 +72,7 @@ const LoginPage = () => {
             <Image src={logo} alt="Logo" width={200} height={50} />
           </div>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -38,6 +81,8 @@ const LoginPage = () => {
                 type="email"
                 placeholder="Enter your email"
                 required
+                onChange={handleChange}
+                value={formData.email}
                 className="bg-[#ffede1]"
               />
             </div>
@@ -46,7 +91,9 @@ const LoginPage = () => {
               <Input
                 id="password"
                 name="password"
-                type="text"
+                type="password"
+                onChange={handleChange}
+                value={formData.password}
                 placeholder="Enter your password"
                 required
                 className="bg-[#ffede1]"
@@ -57,7 +104,14 @@ const LoginPage = () => {
               type="submit"
               className="w-full bg-black text-white hover:bg-black transition-colors cursor-pointer"
             >
-              Login
+              {isLoading ? (
+                "Login In..."
+              ) : (
+                <>
+                  Login
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
             </Button>
             <p className="text-center text-[#3a3d56] text-sm">
               Dont have an account?{" "}
