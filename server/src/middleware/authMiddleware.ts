@@ -53,7 +53,7 @@ export const isSuperAdmin = (
   res: Response,
   next: NextFunction
 ) => {
-  if (req.user && req.user?.role !== "SUPER_ADMIN") {
+  if (req.user && req.user?.role === "SUPER_ADMIN") {
     next();
   } else {
     res.status(403).json({
