@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { protectCreateProductAction } from "@/actions/product";
@@ -16,8 +17,8 @@ import { useProductStore } from "@/store/useProductStore";
 import { brands, categories, colors, Gender, sizes } from "@/utils/config";
 import { Upload } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface FormState {
@@ -45,9 +46,35 @@ const SuperAdminManageProductPage = () => {
   const [selectedColours, setSelectedColours] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
+  const searchParams = useSearchParams();
+  const getCurrentEditedProductId = searchParams.get("id");
+  const isEditedMode = !!getCurrentEditedProductId;
+
   const router = useRouter();
 
-  const { createProduct, isLoading } = useProductStore();
+  const { createProduct, isLoading, getProductById, updateProduct } =
+    useProductStore();
+
+  // For update product
+  useEffect(() => {
+    if (isEditedMode) {
+      getProductById(getCurrentEditedProductId).then((product) => {
+        if (product) {
+          setFormState({
+            name: product.name,
+            brand: product.brand,
+            description: product.description,
+            category: product.category,
+            gender: product.gender,
+            price: product.price.toString(),
+            stock: product.stock.toString(),
+          });
+          setSelectedSizes(product.sizes);
+          setSelectedColours(product.colors);
+        }
+      });
+    }
+  }, [getCurrentEditedProductId, isEditedMode]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -105,11 +132,15 @@ const SuperAdminManageProductPage = () => {
     formData.append("sizes", selectedSizes.join(","));
     formData.append("colors", selectedColours.join(","));
 
-    selectedFiles.forEach((file) => {
-      formData.append("images", file);
-    });
+    if (!isEditedMode) {
+      selectedFiles.forEach((file) => {
+        formData.append("images", file);
+      });
+    }
 
-    const result = await createProduct(formData);
+    const result = isEditedMode
+      ? await updateProduct(getCurrentEditedProductId, formData)
+      : await createProduct(formData);
 
     console.log(result);
     if (result) {
@@ -128,38 +159,40 @@ const SuperAdminManageProductPage = () => {
           className="grid gap-6 md:grid-cols-2 lg:grid-cols-1"
         >
           {/* File Upload */}
-          <div className="mt-2 w-full flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-400 p-12">
-            <div className="text-center">
-              <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="mt-4 flex flex-col leading-6 text-gray-600">
-                <Label>
-                  <span>Click to browse</span>
-                  <input
-                    type="file"
-                    className="sr-only"
-                    multiple
-                    onChange={handleFileChange}
-                  />
-                </Label>
-              </div>
-            </div>
-            {selectedFiles.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <h2 className="text-sm font-semibold">Selected Files:</h2>
-                {selectedFiles.map((file, index) => (
-                  <div key={index} className="text-sm relative">
-                    <Image
-                      src={URL.createObjectURL(file)}
-                      alt={`Preview ${index + 1}`}
-                      width={80}
-                      height={80}
-                      className="h-20 w-20 rounded-md object-cover"
+          {isEditedMode ? null : (
+            <div className="mt-2 w-full flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-400 p-12">
+              <div className="text-center">
+                <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                <div className="mt-4 flex flex-col leading-6 text-gray-600">
+                  <Label>
+                    <span>Click to browse</span>
+                    <input
+                      type="file"
+                      className="sr-only"
+                      multiple
+                      onChange={handleFileChange}
                     />
-                  </div>
-                ))}
+                  </Label>
+                </div>
               </div>
-            )}
-          </div>
+              {selectedFiles.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <h2 className="text-sm font-semibold">Selected Files:</h2>
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="text-sm relative">
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        width={80}
+                        height={80}
+                        className="h-20 w-20 rounded-md object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="space-y-4">
             {/* Product name */}

@@ -127,7 +127,6 @@ export const updateProduct = async (
       colors,
       price,
       stock,
-      soldCount,
       rating,
     } = req.body;
 
@@ -155,7 +154,6 @@ export const updateProduct = async (
         colors: colors.split(","),
         price: parseFloat(price),
         stock: parseInt(stock),
-        soldCount: parseInt(soldCount),
         rating: parseFloat(rating),
       },
     });

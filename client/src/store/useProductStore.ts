@@ -26,8 +26,8 @@ export interface ProductState {
 
   fetchAllProductsForAdmin: () => Promise<void>;
   createProduct: (productData: FormData) => Promise<Product | null>;
-  updateProduct: (id: string, productData: FormData) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
+  updateProduct: (id: string, productData: FormData) => Promise<Product | null>;
+  deleteProduct: (id: string) => Promise<boolean>;
   getProductById: (id: string) => Promise<Product | null>;
 }
 
@@ -85,14 +85,18 @@ export const useProductStore = create<ProductState>((set) => ({
   updateProduct: async (id: string, productData: FormData) => {
     set({ isLoading: true });
     try {
-      await axios.put(`${API_ROUTES.PRODUCTS}/${id}`, productData, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      const response = await axios.put(
+        `${API_ROUTES.PRODUCTS}/${id}`,
+        productData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       set({ isLoading: false });
+      return response.data;
     } catch (error) {
       set({
         error: axios.isAxiosError(error)
@@ -100,16 +104,18 @@ export const useProductStore = create<ProductState>((set) => ({
           : "Failed to update product",
         isLoading: false,
       });
+      return null;
     }
   },
   deleteProduct: async (id: string) => {
     set({ isLoading: true });
     try {
-      await axios.delete(`${API_ROUTES.PRODUCTS}/${id}`, {
+      const response = await axios.delete(`${API_ROUTES.PRODUCTS}/${id}`, {
         withCredentials: true,
       });
 
       set({ isLoading: false });
+      return response.data.success;
     } catch (error) {
       set({
         error: axios.isAxiosError(error)

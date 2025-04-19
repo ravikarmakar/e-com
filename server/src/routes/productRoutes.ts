@@ -6,6 +6,7 @@ import {
   delteProduct,
   fetchAllProductForAdmin,
   getProductById,
+  updateProduct,
 } from "../controllers/productController";
 
 const router = express.Router();
@@ -30,7 +31,7 @@ router.put(
   authenticateJwt,
   isSuperAdmin,
   // upload.array("images", 5),
-  createProduct
+  updateProduct
 );
 router.delete("/:id", authenticateJwt, isSuperAdmin, delteProduct);
 
