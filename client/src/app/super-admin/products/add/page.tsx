@@ -148,6 +148,23 @@ const SuperAdminManageProductPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (getCurrentEditedProductId === null) {
+      setFormState({
+        name: "",
+        brand: "",
+        description: "",
+        category: "",
+        gender: "",
+        price: "",
+        stock: "",
+      });
+
+      setSelectedSizes([]);
+      setSelectedColours([]);
+    }
+  }, [getCurrentEditedProductId]);
+
   return (
     <div className="p-6">
       <div className="flex flex-col gap-6">

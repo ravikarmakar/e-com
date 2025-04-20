@@ -1,7 +1,7 @@
 import e, { NextFunction, Request, Response } from "express";
 import { jwtVerify, JWTPayload } from "jose";
 
-export interface AuthanticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
     email: string;
@@ -10,7 +10,7 @@ export interface AuthanticatedRequest extends Request {
 }
 
 export const authenticateJwt = (
-  req: AuthanticatedRequest,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -49,7 +49,7 @@ export const authenticateJwt = (
 };
 
 export const isSuperAdmin = (
-  req: AuthanticatedRequest,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {

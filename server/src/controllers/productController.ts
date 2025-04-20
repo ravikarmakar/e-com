@@ -1,12 +1,12 @@
 import { Response } from "express";
-import { AuthanticatedRequest } from "../middleware/authMiddleware";
+import { AuthenticatedRequest } from "../middleware/authMiddleware";
 import cloudinary from "../config/cloudinary";
 import { prisma } from "../server";
 import fs from "fs";
 
 // create new product
 export const createProduct = async (
-  req: AuthanticatedRequest,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {
@@ -66,7 +66,7 @@ export const createProduct = async (
 
 // fetch all products for admin
 export const fetchAllProductForAdmin = async (
-  req: AuthanticatedRequest,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {
@@ -83,7 +83,7 @@ export const fetchAllProductForAdmin = async (
 
 // get a single product
 export const getProductById = async (
-  req: AuthanticatedRequest,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {
@@ -112,7 +112,7 @@ export const getProductById = async (
 
 // update a product (admin)
 export const updateProduct = async (
-  req: AuthanticatedRequest,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {
@@ -172,7 +172,7 @@ export const updateProduct = async (
 
 // delete a product (admin)
 export const delteProduct = async (
-  req: AuthanticatedRequest,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {

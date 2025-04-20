@@ -5,6 +5,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
+import couponRoutes from "./routes/couponRoutes";
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,7 @@ export const prisma = new PrismaClient();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/coupon", couponRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello form E-Commerce backend");
