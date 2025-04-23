@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { AlertDialogHeader } from "@/components/ui/alert-dialog";
@@ -18,11 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { useProductStore } from "@/store/useProductStore";
 import { brands, categories, colors, sizes } from "@/utils/config";
-import { SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import Image from "next/image";
-// import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const ProductListingPage = () => {
   const [priceRange, setPriceRange] = useState([0, 100000]);
@@ -32,8 +34,47 @@ const ProductListingPage = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const router = useRouter();
+  const {
+    products,
+    currentPage,
+    // totalProducts,
+    totalPages,
+    setCurrentPage,
+    fetchProductsForClient,
+    isLoading,
+    error,
+  } = useProductStore();
 
-  // const router = useRouter();
+  const fetchAllProducts = () => {
+    fetchProductsForClient({
+      page: currentPage,
+      limit: 2,
+      categories: selectedCategories,
+      sizes: selectedSizes,
+      colors: selectedColors,
+      brands: selectedBrands,
+      minPrice: priceRange[0],
+      maxPrice: priceRange[1],
+      sortBy,
+      sortOrder,
+    });
+  };
+
+  useEffect(() => {
+    fetchAllProducts();
+  }, [
+    currentPage,
+    selectedCategories,
+    selectedSizes,
+    selectedBrands,
+    selectedColors,
+    priceRange,
+    sortBy,
+    sortOrder,
+  ]);
+
+  console.log(currentPage, totalPages);
 
   const handleSortChange = (value: string) => {
     console.log(value);
@@ -58,6 +99,11 @@ const ProductListingPage = () => {
         ? prev.filter((item) => item !== value)
         : [...prev, value]
     );
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    // fetchAllProducts();
   };
 
   const FilterSection = () => {
@@ -222,8 +268,92 @@ const ProductListingPage = () => {
 
         <div className="flex gap-8">
           <div className="hidden lg:block w-64 flex-shrink-0">
-            <h3 className="text-lg font-semibold mb-4">Filters</h3>
             <FilterSection />
+          </div>
+
+          <div className="flex-1">
+            {isLoading ? (
+              <div>Loading...</div>
+            ) : error ? (
+              <div>Error: {error}</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {products.map((productItem) => (
+                  <div
+                    onClick={() => router.push(`/listing/${productItem.id}`)}
+                    key={productItem.id}
+                    className="group"
+                  >
+                    <div className="relative aspect-[3/4] mb-4 bg-gray-100 overflow-hidden">
+                      <Image
+                        fill
+                        sizes="(100vw)"
+                        src={productItem.images[0]}
+                        alt={productItem.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <Button className="bg-white text-black hover:bg-gray-100">
+                          Quick View
+                        </Button>
+                      </div>
+                    </div>
+                    <h3 className="font-bold">{productItem.name}</h3>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-semibold">
+                        ${productItem.price.toFixed(2)}
+                      </span>
+                      <div className="flex gap-1">
+                        {productItem.colors.map((colorItem, index) => (
+                          <div
+                            key={index}
+                            className={`w-4 h-4 rounded-full border `}
+                            style={{ backgroundColor: colorItem }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            <div className="mt-10 items-center flex justify-center gap-2">
+              <Button
+                disabled={currentPage === 1}
+                variant={"outline"}
+                size={"icon"}
+                className="cursor-pointer"
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    className="w-10 cursor-pointer"
+                    onClick={() => handlePageChange(page)}
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
+
+              <Button
+                disabled={currentPage === totalPages}
+                variant={"outline"}
+                size={"icon"}
+                className="cursor-pointer"
+                onClick={() =>
+                  handlePageChange(Math.min(totalPages, currentPage + 1))
+                }
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

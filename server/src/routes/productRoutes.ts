@@ -7,6 +7,7 @@ import {
   fetchAllProductForAdmin,
   getProductById,
   updateProduct,
+  getProductForClient,
 } from "../controllers/productController";
 
 const router = express.Router();
@@ -24,8 +25,6 @@ router.get(
   isSuperAdmin,
   fetchAllProductForAdmin
 );
-
-router.get("/:id", authenticateJwt, getProductById);
 router.put(
   "/:id",
   authenticateJwt,
@@ -33,6 +32,8 @@ router.put(
   // upload.array("images", 5),
   updateProduct
 );
+router.get("/fetch-client-products", authenticateJwt, getProductForClient);
+router.get("/:id", authenticateJwt, getProductById);
 router.delete("/:id", authenticateJwt, isSuperAdmin, delteProduct);
 
 export default router;

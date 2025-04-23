@@ -23,18 +23,36 @@ export interface ProductState {
   products: Product[];
   isLoading: boolean;
   error: string | null;
-
+  currentPage: number;
+  totalPages: number;
+  totalProducts: number;
   fetchAllProductsForAdmin: () => Promise<void>;
   createProduct: (productData: FormData) => Promise<Product | null>;
   updateProduct: (id: string, productData: FormData) => Promise<Product | null>;
   deleteProduct: (id: string) => Promise<boolean>;
   getProductById: (id: string) => Promise<Product | null>;
+  fetchProductsForClient: (params: {
+    page?: number;
+    limit?: number;
+    categories?: string[];
+    sizes?: string[];
+    colors?: string[];
+    brands?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }) => Promise<void>;
+  setCurrentPage: (page: number) => void;
 }
 
 export const useProductStore = create<ProductState>((set) => ({
   products: [],
   isLoading: false,
   error: null,
+  currentPage: 1,
+  totalPages: 1,
+  totalProducts: 0,
 
   fetchAllProductsForAdmin: async () => {
     set({ isLoading: true, error: null });
@@ -142,4 +160,41 @@ export const useProductStore = create<ProductState>((set) => ({
       });
     }
   },
+  fetchProductsForClient: async (params) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const queryString = {
+        ...params,
+        categories: params?.categories?.join(","),
+        sizes: params?.sizes?.join(","),
+        colors: params?.colors?.join(","),
+        brands: params?.brands?.join(","),
+      };
+
+      const response = await axios.get(
+        `${API_ROUTES.PRODUCTS}/fetch-client-products`,
+        {
+          params: queryString,
+          withCredentials: true,
+        }
+      );
+
+      set({
+        products: response.data.products,
+        totalPages: response.data.totalPage,
+        totalProducts: response.data.totalProducts,
+        currentPage: response.data.currentPage,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: axios.isAxiosError(error)
+          ? error.response?.data?.error
+          : "Failed to fetch products",
+        isLoading: false,
+      });
+    }
+  },
+  setCurrentPage: (page: number) => set({ currentPage: page }),
 }));
