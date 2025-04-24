@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import couponRoutes from "./routes/couponRoutes";
 import settingRoutes from "./routes/settingRoutes";
+import cartRoutes from "./routes/cartRoutes";
 
 dotenv.config();
 const app = express();
@@ -29,6 +30,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/coupon", couponRoutes);
 app.use("/api/settings", settingRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello form E-Commerce backend");

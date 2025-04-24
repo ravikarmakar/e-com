@@ -38,7 +38,6 @@ const ProductListingPage = () => {
   const {
     products,
     currentPage,
-    // totalProducts,
     totalPages,
     setCurrentPage,
     fetchProductsForClient,
@@ -74,8 +73,6 @@ const ProductListingPage = () => {
     sortOrder,
   ]);
 
-  console.log(currentPage, totalPages);
-
   const handleSortChange = (value: string) => {
     console.log(value);
     const [newSortBy, newSortOrder] = value.split("-");
@@ -103,7 +100,6 @@ const ProductListingPage = () => {
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    // fetchAllProducts();
   };
 
   const FilterSection = () => {
