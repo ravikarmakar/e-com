@@ -7,12 +7,19 @@ import { Product } from "../../../store/useProductStore";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCartStore } from "@/store/useCartStore";
+import { toast } from "sonner";
 
 const ProductDetailsContent = ({ id }: { id: string }) => {
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedColor, setSelectedColor] = useState(0);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
   const { getProductById, isLoading } = useProductStore();
+  const { addToCart } = useCartStore();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -27,6 +34,26 @@ const ProductDetailsContent = ({ id }: { id: string }) => {
     fetchProduct();
   }, [id, getProductById, router]);
 
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images[selectedImage],
+        color: product.colors[selectedColor],
+        size: selectedSize,
+        quantity,
+      });
+
+      setSelectedColor(0);
+      setQuantity(0);
+      setSelectedSize("");
+
+      toast.success("Product is added to cart");
+    }
+  };
+
   if (!product || isLoading) return null;
 
   return (
@@ -40,18 +67,18 @@ const ProductDetailsContent = ({ id }: { id: string }) => {
             <div className="hidden lg:flex flex-col gap-2 w-24">
               {product?.images.map((image: string, index: number) => (
                 <button
-                  // onClick={() => setSelectedImage(index)}
+                  onClick={() => setSelectedImage(index)}
                   key={index}
-                  // className={`${
-                  //   selectedImage === index
-                  //     ? "border-black"
-                  //     : "border-transparent"
-                  // } border-2`}
+                  className={`${
+                    selectedImage === index
+                      ? "border-blue-500"
+                      : "border-transparent"
+                  } border-3 rounded-xl overflow-hidden`}
                 >
                   <img
                     src={image}
                     alt={`Product-${index + 1}`}
-                    className="w-full aspect-square object-cover"
+                    className="w-full p-1 aspect-square object-cover cursor-pointer rounded-xl"
                   />
                 </button>
               ))}
@@ -60,7 +87,7 @@ const ProductDetailsContent = ({ id }: { id: string }) => {
             {/* Main Image */}
             <div className="flex-1 relative w-[300px]">
               <img
-                src={product.images[0]}
+                src={product.images[selectedImage]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -86,14 +113,13 @@ const ProductDetailsContent = ({ id }: { id: string }) => {
                 {product.colors.map((color: string, index: number) => (
                   <button
                     key={index}
-                    className={`w-12 h-12 rounded-full border-2`}
-                    // className={`w-12 h-12 rounded-full border-2 ${
-                    //   selectedColor === index
-                    //     ? "border-black"
-                    //     : "border-gray-300"
-                    // }`}
+                    className={`w-12 cursor-pointer h-12 rounded-full border-2 ${
+                      selectedColor === index
+                        ? "border-black"
+                        : "border-gray-300"
+                    }`}
                     style={{ backgroundColor: color }}
-                    // onClick={() => setSelectedColor(index)}
+                    onClick={() => setSelectedColor(index)}
                   />
                 ))}
               </div>
@@ -106,9 +132,9 @@ const ProductDetailsContent = ({ id }: { id: string }) => {
                 {product.sizes.map((size: string, index: number) => (
                   <Button
                     key={index}
-                    className={`w-12 h-12`}
-                    // variant={selectedSize === size ? "default" : "outline"}
-                    // onClick={() => setSelectedSize(size)}
+                    className={`w-12 h-12 cursor-pointer rounded-full`}
+                    variant={selectedSize === size ? "default" : "outline"}
+                    onClick={() => setSelectedSize(size)}
                   >
                     {size}
                   </Button>
@@ -121,15 +147,17 @@ const ProductDetailsContent = ({ id }: { id: string }) => {
               <h3 className="font-medium mb-2">Quantity</h3>
               <div className="flex items-center gap-2">
                 <Button
-                  // onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   variant="outline"
+                  className="cursor-pointer"
                 >
                   -
                 </Button>
-                {/* <span className="w-12 text-center">{quantity}</span> */}
+                <span className="w-12 text-center">{quantity}</span>
                 <Button
-                  // onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(quantity + 1)}
                   variant="outline"
+                  className="cursor-pointer"
                 >
                   +
                 </Button>
@@ -141,7 +169,7 @@ const ProductDetailsContent = ({ id }: { id: string }) => {
                 className={
                   "w-full bg-black text-white hover:bg-gray-800 cursor-pointer"
                 }
-                // onClick={handleAddToCart}
+                onClick={handleAddToCart}
               >
                 ADD TO CART
               </Button>

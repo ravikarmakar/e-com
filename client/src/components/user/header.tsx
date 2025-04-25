@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { ArrowLeft, Menu, ShoppingBag, ShoppingCart, User } from "lucide-react";
@@ -12,7 +13,8 @@ import {
 import { Button } from "../ui/button";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useCartStore } from "@/store/useCartStore";
 
 const navItems = [
   {
@@ -30,6 +32,11 @@ const Header = () => {
   const { logout } = useAuthStore();
   const [mobileView, setMobileView] = useState<"menu" | "account">("menu");
   const [showSheetDialog, setShowSheetDialog] = useState(false);
+  const { fetchCart, items } = useCartStore();
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -109,7 +116,7 @@ const Header = () => {
                 className="w-full justify-start"
               >
                 <ShoppingBag className="mr-1 h-4 w-4" />
-                Cart (2)
+                Cart ({items?.length})
               </Button>
             </div>
           </div>
@@ -146,7 +153,7 @@ const Header = () => {
             >
               <ShoppingCart />
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-black text-white text-xs rounded-full flex items-center justify-center">
-                {/* {items?.length} */}0
+                {items?.length}
               </span>
             </div>
 

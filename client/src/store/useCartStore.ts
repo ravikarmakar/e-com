@@ -1,5 +1,5 @@
 import { API_ROUTES } from "@/utils/api";
-import debounce from "lodash.debounce";
+import debounce from "lodash/debounce";
 import axios from "axios";
 import { create } from "zustand";
 
@@ -29,15 +29,18 @@ export const useCartStore = create<CartStore>((set) => {
   const debounceUpdateCartItemQuantity = debounce(
     async (id: string, quantity: number) => {
       try {
-        await axios.put(`${API_ROUTES.CART}/update/${id}`, quantity, {
-          withCredentials: true,
-        });
+        await axios.put(
+          `${API_ROUTES.CART}/update/${id}`,
+          { quantity },
+          {
+            withCredentials: true,
+          }
+        );
       } catch (error) {
         set({
           error: axios.isAxiosError(error)
             ? error.response?.data?.error
             : "Failed to update cart item quantity",
-          isLoading: false,
         });
       }
     }

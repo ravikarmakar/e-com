@@ -55,7 +55,10 @@ export const createProduct = async (
     });
 
     // clean up the uploaded files
-    files.forEach((file) => fs.unlinkSync(file.path));
+    files.forEach((file) => {
+      if (file.path) fs.unlinkSync(file.path);
+      else return;
+    });
     res.status(201).json(newProduct);
   } catch (error) {
     console.error("Error in creating product:", error);
